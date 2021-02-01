@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'newsfeeds.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
-void main() => runApp(new DescriptionPage(null));
+// void main() => runApp(new DescriptionPage(null));
 
 class DescriptionPage extends StatelessWidget {
   static String tag = 'description-page';

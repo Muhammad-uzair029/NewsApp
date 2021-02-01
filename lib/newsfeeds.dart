@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:newsApp/constant.dart';
+import 'package:newsApp/Add_fvrt/Database.dart';
+import 'package:newsApp/Constants/constant.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:newsApp/description.dart';
 import 'dart:io';
 
-import 'package:newsApp/fvrt.dart';
+import 'package:newsApp/Add_fvrt/fvrt.dart';
 
 class NewsFeedPage extends StatelessWidget {
-
   static String tag = "NewsFeedPage-tag";
   NewsFeedPage(this.text);
   final int text;
@@ -33,19 +33,36 @@ class NewsFeedPage extends StatelessWidget {
       appBar: AppBar(
         title: new Text("$title Headlines",
             style: new TextStyle(color: Colors.white)),
-            actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.add_alert),
-                onPressed: (){
-                  Navigator.push(context,
-                   MaterialPageRoute(builder: 
-                    (BuildContext context)=> fvrt_news() 
-                         ));
-              },)
-              ],
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add_alert),
+            onPressed: () {
+              String sendname;
+
+              if (checktype.contains(
+                  'top-headlines?country=in&category=business&apiKey=')) {
+                sendname = 'Bitcoin';
+              }
+              if (checktype.contains(
+                  'everything?q=bitcoin&sortBy=publishedAt&apiKey=')) {
+                sendname = 'Bussiness';
+              }
+              if (checktype
+                  .contains('top-headlines?sources=techcrunch&apiKey=')) {
+                sendname = 'Tech';
+              }
+              if (checktype.contains('everything?domains=wsj.com&apiKey=')) {
+                sendname = 'WallStreet';
+              }
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (BuildContext context) =>
+                          fvrt_news(checktype: sendname)));
+            },
+          )
+        ],
         iconTheme: IconThemeData(color: Colors.white),
-         
-      
       ),
       body: new SafeArea(
           child: new Column(
@@ -75,6 +92,7 @@ class NewsFeedPage extends StatelessWidget {
   }
 }
 
+String checktype;
 Future<List<News>> fatchNews(http.Client client, id) async {
   String url;
   if (id == 1) {
@@ -97,12 +115,12 @@ Future<List<News>> fatchNews(http.Client client, id) async {
     url =
         Constant.base_url + "everything?domains=wsj.com&apiKey=" + Constant.key;
   }
+  checktype = url;
   final response = await client.get(url);
   return compute(parsenews, response.body.toString());
 }
 
 List<News> parsenews(String responsebody) {
-  
   final parsed = json.decode(responsebody.toString());
   return (parsed["articles"] as List)
       .map<News>((json) => new News.fromJson(json))
@@ -127,25 +145,20 @@ class News {
   }
 }
 
-
 class NewsList extends StatelessWidget {
   final List<News> news;
 
   NewsList({Key key, this.news}) : super(key: key);
-  
- 
- 
-void post_fvrt(String title,String url) async{
-final response=await  http.post('http://192.168.0.106/news%20app/add_to_favourite.php',body: 
-{
-  "title" : title,
-  "url": url,
 
-}
-);
- 
+  // void post_fvrt(String title, String url) async {
+  //   final response = await http
+  //       .post('http://192.168.0.106/news%20app/add_to_favourite.php', body: {
+  //     "title": title,
+  //     "url": url,
+  //   });
+  // }
 
-}
+  DBStudentManager fvrt_news = new DBStudentManager();
 
   @override
   Widget build(BuildContext context) {
@@ -155,15 +168,54 @@ final response=await  http.post('http://192.168.0.106/news%20app/add_to_favourit
         return new Card(
           child: new ListTile(
             trailing: CircleAvatar(
-              
-              child:new  IconButton(
-        icon: Icon(Icons.star_border,color: Colors.white,),
-                  onPressed: ()
-                  {
-                String aa=news[index].title;
-                String bb=news[index].url;
-                post_fvrt(aa,bb);
-                  },
+              child: new IconButton(
+                icon: Icon(
+                  Icons.star_border,
+                  color: Colors.white,
+                ),
+
+                // mysql database work adding the fvrt info
+                onPressed: () {
+                  String aa = news[index].title;
+                  String bb = news[index].url;
+                  Student st = new Student(
+                    title: aa,
+                    url: bb,
+                  );
+                  print(checktype);
+                  if (checktype.contains(
+                      'top-headlines?country=in&category=business&apiKey=')) {
+                    fvrt_news.insertStudent(st, 'Bitcoin').then((value) => {
+                          aa,
+                          bb,
+                          print("Student Data Add to database $value"),
+                        });
+                  }
+                  if (checktype.contains(
+                      'everything?q=bitcoin&sortBy=publishedAt&apiKey=')) {
+                    fvrt_news.insertStudent(st, 'Bussiness').then((value) => {
+                          aa,
+                          bb,
+                          print("Student Data Add to database $value"),
+                        });
+                  }
+                  if (checktype
+                      .contains('top-headlines?sources=techcrunch&apiKey=')) {
+                    fvrt_news.insertStudent(st, 'Tech').then((value) => {
+                          aa,
+                          bb,
+                          print("Student Data Add to database $value"),
+                        });
+                  }
+                  if (checktype
+                      .contains('everything?domains=wsj.com&apiKey=')) {
+                    fvrt_news.insertStudent(st, 'WallStreet').then((value) => {
+                          aa,
+                          bb,
+                          print("Student Data Add to database $value"),
+                        });
+                  }
+                },
               ),
               backgroundColor: Colors.lightBlue,
             ),
@@ -181,6 +233,4 @@ final response=await  http.post('http://192.168.0.106/news%20app/add_to_favourit
       },
     );
   }
- 
 }
-
